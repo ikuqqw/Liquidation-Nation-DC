@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Liquidation Nation DC
 
-## Getting Started
+Inventory showcase website for in-store purchases.
 
-First, run the development server:
+No online checkout.  
+No cart.  
+Fast admin updates for stock and quantity.
+
+## Stack
+
+- Next.js (App Router)
+- Supabase Postgres
+- Supabase Storage (`product-images` bucket)
+- Supabase Auth (admin login)
+- Client-side search via Fuse.js
+- Cloudflare Pages hosting
+
+## Routes
+
+Public:
+
+- `/` homepage (hero, contact info, categories, featured, FAQ)
+- `/catalog` searchable/filterable inventory showcase
+
+Admin:
+
+- `/admin/login`
+- `/admin/products`
+- `/admin/products/new`
+- `/admin/products/[id]/edit`
+- `/admin/categories`
+
+## Local setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create env file:
+
+```bash
+cp .env.example .env.local
+```
+
+Set:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+
+3. In Supabase SQL Editor run:
+
+- `supabase/schema.sql`
+- `supabase/seed.sql`
+
+4. Start local dev:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Supabase schema
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Tables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `categories`
+- `products`
+- `product_images`
 
-## Learn More
+Includes:
 
-To learn more about Next.js, take a look at the following resources:
+- enums for product `status` and `condition`
+- indexes
+- `updated_at` trigger
+- RLS policies for public storefront reads and authenticated admin writes
+- storage bucket/policies for `product-images`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Product cards intentionally show only `Available in store only`.
+- Mobile catalog uses a `Filters` toggle button instead of persistent left sidebar.
+- Quick stock actions are available in admin products table:
+  - `Mark as Sold`
+  - `Back in Stock`
+  - `Hide`
+  - quantity edit
 
-## Deploy on Vercel
+## Cloudflare Pages
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Use framework preset `Next.js` in Cloudflare Pages and set the same env vars there.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Build command:
+
+```bash
+npm run build
+```
+
+Output directory:
+
+`(auto-managed by the Next.js preset)`

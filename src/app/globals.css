@@ -1,26 +1,47 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #090909;
+  --foreground: #ffe7cf;
+  --surface: #101010;
+  --brand: #f97316;
+  --brand-contrast: #111111;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), sans-serif;
+  background-image:
+    radial-gradient(1200px 700px at 85% -20%, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0.04) 36%, transparent 65%),
+    linear-gradient(165deg, #090909 0%, #0b0b0b 48%, #080808 100%);
+  background-attachment: fixed;
 }
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.03em;
+}
+
+* {
+  border-color: rgba(249, 115, 22, 0.25);
+}
+
+@media (max-width: 640px) {
+  body {
+    background-image:
+      radial-gradient(900px 500px at 75% -20%, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0.02) 40%, transparent 70%),
+      linear-gradient(170deg, #090909 0%, #0b0b0b 55%, #080808 100%);
+    background-attachment: scroll;
+  }
+}
+
