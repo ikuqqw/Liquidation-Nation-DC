@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Product } from "@/lib/types";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { formatUsd } from "@/lib/utils";
-import { PRODUCT_STATUS_LABELS } from "@/lib/constants";
+import { extractStoragePathFromPublicUrl, formatUsd } from "@/lib/utils";
+import { PRODUCT_STATUS_LABELS, STORAGE_BUCKET } from "@/lib/constants";
 
 interface AdminProductsTableProps {
   initialProducts: Product[];
@@ -53,6 +53,43 @@ export function AdminProductsTable({ initialProducts }: AdminProductsTableProps)
   const updateQuantity = (id: number, quantity: number) => {
     const status = quantity > 0 ? "in_stock" : "out_of_stock";
     void updateProduct(id, { quantity, status });
+  };
+
+  const deleteProduct = async (product: Product) => {
+    const confirmed = window.confirm(
+      `Delete "${product.title}"?\n\nThis action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setUpdatingId(product.id);
+    setError("");
+
+    const storagePaths = (product.product_images ?? [])
+      .map((image) => extractStoragePathFromPublicUrl(image.image_url))
+      .filter((path): path is string => Boolean(path));
+
+    if (storagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .remove(storagePaths);
+      if (storageError) {
+        console.warn("[deleteProduct] storage cleanup failed", storageError.message);
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", product.id);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      setUpdatingId(null);
+      return;
+    }
+
+    setProducts((prev) => prev.filter((item) => item.id !== product.id));
+    setUpdatingId(null);
   };
 
   return (
@@ -141,6 +178,14 @@ export function AdminProductsTable({ initialProducts }: AdminProductsTableProps)
                     >
                       Edit
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => void deleteProduct(product)}
+                      disabled={updatingId === product.id}
+                      className="rounded-md border border-rose-500/60 px-2 py-1 text-xs font-semibold text-rose-300 hover:bg-rose-500/15 disabled:opacity-60"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Category, Product, ProductCondition, ProductStatus } from "@/lib/types";
 import { STORAGE_BUCKET } from "@/lib/constants";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { slugify } from "@/lib/utils";
+import { extractStoragePathFromPublicUrl, slugify } from "@/lib/utils";
 
 interface ProductFormProps {
   mode: "create" | "edit";
@@ -64,6 +64,7 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const productId = initialProduct?.id;
   const existingImages = initialProduct?.product_images ?? [];
@@ -190,6 +191,45 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
 
     setIsSaving(false);
     router.push(`/admin/products/${finalProductId}/edit`);
+    router.refresh();
+  };
+
+  const deleteCurrentProduct = async () => {
+    if (!productId) return;
+
+    const confirmed = window.confirm(
+      `Delete "${state.title || "this product"}"?\n\nThis action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setError("");
+    setIsDeleting(true);
+
+    const storagePaths = existingImages
+      .map((image) => extractStoragePathFromPublicUrl(image.image_url))
+      .filter((path): path is string => Boolean(path));
+
+    if (storagePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .remove(storagePaths);
+      if (storageError) {
+        console.warn("[deleteCurrentProduct] storage cleanup failed", storageError.message);
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      setIsDeleting(false);
+      return;
+    }
+
+    router.push("/admin/products");
     router.refresh();
   };
 
@@ -379,7 +419,7 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
-          disabled={isSaving}
+          disabled={isSaving || isDeleting}
           className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving
@@ -395,6 +435,17 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
         >
           Back to products
         </Link>
+
+        {mode === "edit" ? (
+          <button
+            type="button"
+            onClick={() => void deleteCurrentProduct()}
+            disabled={isSaving || isDeleting}
+            className="rounded-lg border border-rose-500/60 px-5 py-2.5 text-sm font-semibold text-rose-300 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeleting ? "Deleting..." : "Delete product"}
+          </button>
+        ) : null}
       </div>
     </form>
   );
