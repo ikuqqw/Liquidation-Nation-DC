@@ -11,8 +11,9 @@ export function SupabaseConfigAlert({ compact = false }: SupabaseConfigAlertProp
       <p className={`mt-2 text-sm ${compact ? "" : "max-w-2xl"}`}>
         Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
         <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (or legacy{" "}
-        <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>) in <code>.env.local</code>,
-        then restart the app.
+        <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>) in <code>.env.local</code>{" "}
+        for local development and in Cloudflare Worker variables for production,
+        then restart/redeploy.
       </p>
     </div>
   );
