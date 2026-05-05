@@ -32,3 +32,43 @@ export function extractStoragePathFromPublicUrl(url: string) {
   if (index === -1) return null;
   return url.slice(index + marker.length);
 }
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function toMoneyNumber(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+export function computeSalesBusinessDay(date = new Date()) {
+  const nyParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const year = Number(nyParts.find((part) => part.type === "year")?.value ?? "0");
+  const month = Number(nyParts.find((part) => part.type === "month")?.value ?? "1");
+  const day = Number(nyParts.find((part) => part.type === "day")?.value ?? "1");
+  const hour = Number(nyParts.find((part) => part.type === "hour")?.value ?? "0");
+
+  const local = new Date(Date.UTC(year, month - 1, day));
+  if (hour >= 22) {
+    local.setUTCDate(local.getUTCDate() + 1);
+  }
+
+  const yyyy = local.getUTCFullYear();
+  const mm = String(local.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(local.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+export function formatBusinessDayLabel(value: string) {
+  const [year, month, day] = value.split("-").map((chunk) => Number(chunk));
+  if (!year || !month || !day) return value;
+  return `${month}/${day}/${year}`;
+}

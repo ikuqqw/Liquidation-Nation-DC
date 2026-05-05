@@ -1,10 +1,15 @@
-import { CatalogSort, ProductCondition, ProductStatus } from "@/lib/types";
+import {
+  CatalogSort,
+  ProductCondition,
+  ProductStatus,
+  PromoDiscountType,
+} from "@/lib/types";
 
 export const STORE_INFO = {
   name: "Liquidation Nation DC",
   address: "xxx",
   phone: "+1 xxx xxx xxxx",
-  hours: "...",
+  hours: "Mon-Fri: 7:00 AM - 4:00 PM | Sat: 7:00 AM - 3:00 PM",
 };
 
 export const DEFAULT_CATEGORIES = [
@@ -41,3 +46,8 @@ export const SORT_OPTIONS: Array<{ value: CatalogSort; label: string }> = [
 ];
 
 export const STORAGE_BUCKET = "product-images";
+
+export const PROMO_DISCOUNT_LABELS: Record<PromoDiscountType, string> = {
+  percent: "%",
+  amount: "$",
+};

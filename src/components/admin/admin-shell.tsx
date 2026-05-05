@@ -14,6 +14,8 @@ const navItems = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/products/new", label: "Add Product" },
   { href: "/admin/categories", label: "Categories" },
+  { href: "/admin/checkout", label: "Checkout" },
+  { href: "/admin/sales", label: "Sales" },
 ];
 
 export function AdminShell({ children }: AdminShellProps) {
